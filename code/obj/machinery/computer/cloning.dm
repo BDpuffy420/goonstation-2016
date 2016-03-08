@@ -16,7 +16,6 @@
 	var/held_credit = 5000 // one free clone
 
 	var/allow_dead_scanning = 0 //Can the dead be scanned in the cloner?
-	var/portable = 0 //override new() proc and proximity check, for port-a-clones
 
 	old
 		icon_state = "old2"
@@ -46,7 +45,6 @@
 /obj/machinery/computer/cloning/New()
 	..()
 	spawn(5)
-		if(portable) return
 		src.scanner = locate(/obj/machinery/clone_scanner, orange(2,src))
 		src.pod1 = locate(/obj/machinery/clonepod, orange(4,src))
 
