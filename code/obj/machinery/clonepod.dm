@@ -23,7 +23,6 @@
 	var/attempting = 0 //One clone attempt at a time thanks
 	var/eject_wait = 0 //Don't eject them as soon as they are created fuckkk
 	var/previous_heal = 0
-	var/portable = 0 //Are we part of a port-a-clone?
 	var/operating = 0 //Are we currently cloning some duder?
 
 	var/gen_analysis = 1 //Are we analysing the genes while reassembling the duder? (read: Do we work faster or do we give a material bonus?)
@@ -118,8 +117,6 @@
 	return 2
 
 /obj/machinery/clonepod/proc/update_icon()
-	if (src.portable) // no need here
-		return
 	if (src.mess)
 		src.icon_state = "pod_g"
 	else
