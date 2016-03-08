@@ -4,20 +4,47 @@
  *	Machines have a process() proc called approximately once per second while a game round is in progress
  *  Thus they can perform repetative tasks, such as calculating pipe gas flow, power usage, etc.
  *
- *
- */
 
+
+bitflags for machine stat variable
+#define BROKEN 1		// machine non-functional
+#define NOPOWER 2		// no available power
+#define POWEROFF 4		// machine shut down, but may still draw a trace amount
+#define MAINT 8			// under maintenance
+#define HIGHLOAD 16		// using a lot of power
+
+/obj/machinery/
+	var
+		stat = 0
+		mob/current user = null
+		power_usage = 0									How much power the machine wants to use.
+		power_channel = EQUIP							EQUIP, LIGHT, ENVIRON
+		power_credit = 0								????? Direct wiring and powernets are a big hackjob that need to be redone.
+		wire_powered = 0								Was the machine able to draw power from the powernet on the last cycle?
+		allow_stunned_dragndrop = 0 					For cyborg docking stations.
+
+	proc
+		SubscribeToProcess()							Adds machine to the "machines" list of things to process on a 1 second loop.
+		UnsubscribeProcess()							Removes machine from the processing list.
+		process()										Called by processing loop for everything in the machines list.
+		gib(atom/location)								Spread metal debris when the machine gets destroyed.
+		get_power_wire()								Finds a viable wire to use as a possible power source.
+		get_direct_powernet()							Gets the power network connected to the power wire.
+		powered(var/chan=EQUIP)							Checks if the machine has power on the channel/doesn't require power.
+		use_power(var/amount,var/chan=EQUIP)			Increments power stats, uses power_credit so don't touch.
+		power_change()									Called when power settings for area change, sets NOPOWER flag if !powered().
+*/
 
 /obj/machinery
 	name = "machinery"
 	icon = 'icons/obj/stationobjs.dmi'
 	var/stat = 0
 	var/mob/current_user = null
-	var/power_usage = 0
-	var/power_channel = EQUIP
-	var/power_credit = 0
-	var/wire_powered = 0
-	var/allow_stunned_dragndrop = 0
+	var/power_usage = 0					// Amount of power the machine requires to function
+	var/power_channel = EQUIP			// The power channel in the APC that the machine draws from. EQUIP, LIGHT or ENVIRON.
+	var/power_credit = 0				// ????
+	var/wire_powered = 0				// Was the machine able to draw power from the powernet on the last cycle?
+	var/allow_stunned_dragndrop = 0		// For cyborg docking stations.
 
 	// New() and disposing() add and remove machines from the global "machines" list
 	// This list is used to call the process() proc for all machines ~1 per second during a round
@@ -39,10 +66,9 @@
 /obj/machinery/proc/UnsubscribeProcess()
 	machines.Remove(src)
 
-
-	/*
-	 *	Prototype procs common to all /obj/machinery objects
-	 */
+/*
+ *	Prototype procs common to all /obj/machinery objects
+ */
 
 /obj/machinery/proc/process()
 	// Called for all /obj/machinery in the "machines" list, approximately once per second
@@ -52,8 +78,8 @@
 	if (machines_may_use_wired_power && power_usage)
 		power_change()
 		if (!(stat & NOPOWER) && wire_powered)
-			use_power(power_usage, power_channel)
-			power_credit = power_usage
+			use_power(power_usage, power_channel)		// Draws power from power_credit > powernet > area APC
+			power_credit = power_usage					// Then makes power_credit equal to amount of power we were using this cycle
 
 /obj/machinery/proc/gib(atom/location)
 	if (!location) return
@@ -99,18 +125,13 @@
 	if(usr.restrained() || usr.lying || usr.stat)
 		//boutput(usr, "<span style='color:red'>You are unable to do that currently!</span>")
 		return 1
-	if(!hasvar(src,"portable") || !src:portable)
-		if ((!in_range(src, usr) || !istype(src.loc, /turf)) && !istype(usr, /mob/living/silicon))
-			if (!usr)
-				message_coders("[type]/Topic(): no usr in Topic - [name] at [showCoords(x, y, z)].")
-			else if (x in list(usr.x - 1, usr.x, usr.x + 1) && y in list(usr.y - 1, usr.y, usr.y + 1) && z == usr.z && isturf(loc))
-				message_coders("[type]/Topic(): is in range of usr, but in_range failed - [name] at [showCoords(x, y, z) ]")
-			//boutput(usr, "<span style='color:red'>You must be near the machine to do this!</span>")
-			return 1
-	else
-		if ((!in_range(src.loc, usr) || !istype(src.loc.loc, /turf)) && !istype(usr, /mob/living/silicon))
-			//boutput(usr, "<span style='color:red'>You must be near the machine to do this!</span>")
-			return 1
+	if ((!in_range(src, usr) || !istype(src.loc, /turf)) && !istype(usr, /mob/living/silicon))
+		if (!usr)
+			message_coders("[type]/Topic(): no usr in Topic - [name] at [showCoords(x, y, z)].")
+		else if (x in list(usr.x - 1, usr.x, usr.x + 1) && y in list(usr.y - 1, usr.y, usr.y + 1) && z == usr.z && isturf(loc))
+			message_coders("[type]/Topic(): is in range of usr, but in_range failed - [name] at [showCoords(x, y, z) ]")
+		//boutput(usr, "<span style='color:red'>You must be near the machine to do this!</span>")
+		return 1
 	src.add_fingerprint(usr)
 	return 0
 
@@ -150,11 +171,12 @@
 		else
 	return
 
+// Called when attacked by a blob
 /obj/machinery/blob_act(var/power)
-	// Called when attacked by a blob
 	if(prob(25 * power / 20))
 		qdel(src)
 
+// Finds a viable wire to use as a possible power source.
 /obj/machinery/proc/get_power_wire()
 	var/obj/cable/C = null
 	for (var/obj/cable/candidate in get_turf(src))
@@ -163,6 +185,7 @@
 			break
 	return C
 
+// Gets the power network connected to the power wire.
 /obj/machinery/proc/get_direct_powernet()
 	var/obj/cable/C = get_power_wire()
 	if (C)
@@ -189,38 +212,39 @@
 		return 0
 	return A.powered(chan)	// return power status of the area
 
-/obj/machinery/proc/use_power(var/amount, var/chan=EQUIP) // defaults to Equipment channel
-	// increment the power usage stats for an area
-	if (!src.loc)
-		return
+// Increment the power usage stats for an area.
+// If directly wired up and can draw power from wires, draws power from power_credit, then the powernet.
+// Otherwise draws power from the area APC/magic space power.
+/obj/machinery/proc/use_power(var/amount, var/chan=EQUIP) 	// Defaults to drawing power from area Equipment channel.
+	if (!src.loc)												// If we're not in a place,
+		return														// then abort.
+	else if (machines_may_use_wired_power && wire_powered)		// Otherwise if we can work with the wires and they're powered,
+		if (power_credit >= amount)									// and we have enough power_credit to handle requirements,
+			power_credit -= amount										// then fulfil power requirement from power_credit.
+			return														// And we're done!
+		else if (power_credit)										// Otherwise, as long as there is some power_credit,
+			amount -= power_credit										// then fulfil as much of the amount as possible from it,
+			power_credit = 0											// which uses it up entirely.
+			var/datum/powernet/net = get_direct_powernet()				// Try and directly connect to the powernet.
+			if (net)													// If we can find a powernet,
+				// TODO: disallow exceeding network power capacity			// and the powernet has enough capacity to handle it,
+				net.newload += amount										// then make excess power requirement a powernet load.
+				return														// And we're done!
+	else														// If we can't draw directly from a power wire for whatever reason,
+		var/area/A = get_area(src)									// then try and find out which area we're in.
+		if(!A || !isarea(A))										// If we're not in an area,
+			return														// then abort.
+		else														// Otherwise,
+			A.use_power(amount, chan)									// draw excess power requirement from the APC (or space).
+			return														// And we're done!
 
-	if (machines_may_use_wired_power && wire_powered)
-		if (power_credit >= amount)
-			power_credit -= amount
-			return
-		if (power_credit)
-			amount -= power_credit
-			power_credit = 0
-		var/datum/powernet/net = get_direct_powernet()
-		if (net)
-			// todo: disallow exceeding network power capacity
-			net.newload += amount
-			return
-
-	var/area/A = get_area(src)		// make sure it's in an area
-	if(!A || !isarea(A))
-		return
-
-	A.use_power(amount, chan)
-
-
-/obj/machinery/proc/power_change()		// called whenever the power settings of the containing area change
-										// by default, check equipment channel & set flag
-										// can override if needed
+// called whenever the power settings of the containing area change
+// by default, check equipment channel & set flag
+// can override if needed
+/obj/machinery/proc/power_change()
 	if(powered())
 		stat &= ~NOPOWER
 	else
-
 		stat |= NOPOWER
 	return
 
