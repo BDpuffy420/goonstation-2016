@@ -7,8 +7,17 @@
 	throwforce = 5.0
 	throw_range = 15
 	throw_speed = 3
-	desc = "You can use this on airlocks or APCs to try to hack them without cutting wires."
+	desc = "A universal electronic signal manipulator. A vital tool for electricians, hackers and general pranksters."
 	m_amt = 50
 	g_amt = 20
 	mats = 6
 	module_research = list("tools" = 5, "devices" = 2)
+
+	var/signalstring = ""
+
+	proc/setSignal()
+		signalstring = input("Set a signal to use as an output", "Custom Signal", signalstring)
+		return signalstring
+
+	attack_self()
+		setSignal()
