@@ -807,6 +807,17 @@
 	sample_reagent = "glitter"
 	sample_verb = "scrape"
 
+/obj/decal/cleanable/ketchup //It's ketchup that looks like blood.
+	name = "blood"
+	desc = "It's strangely bright red. Smells a bit like tomatoes as well." //Grody
+	icon = 'icons/effects/blood.dmi'
+	icon_state = "floor1"
+	random_icon_states = list("floor1", "floor2", "floor3", "floor4", "floor5", "floor6", "floor7")
+	color = "#cc0000" //Just a bit brighter than DEFAULT_BLOOD_COLOR
+	slippery = 10
+	can_sample = 1
+	sample_reagent = "ketchup"
+
 /obj/decal/cleanable/paper
 	name = "paper"
 	desc = "Ripped up little flecks of paper."

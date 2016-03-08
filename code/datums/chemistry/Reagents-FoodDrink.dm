@@ -1821,6 +1821,12 @@ datum
 			fluid_g = 0
 			fluid_b = 0
 			transparency = 255
+			reaction_turf(var/turf/T, var/volume) //Makes the kechup splats
+				src = null
+				if (volume >= 5)
+					if (!locate(/obj/decal/cleanable/ketchup) in T)
+						playsound(T, "sound/effects/splat.ogg", 50, 1)
+						new /obj/decal/cleanable/ketchup(T)
 
 		fooddrink/mustard
 			name = "mustard"
