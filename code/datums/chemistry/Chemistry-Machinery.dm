@@ -25,7 +25,7 @@
 	var/obj/beaker = null
 	var/active = 0
 	var/target_temp = T0C
-	var/roboworking = 0
+	var/mob/roboworking = null
 	var/static/image/icon_beaker = image('icons/obj/chemical.dmi', "heater-beaker")
 	// The chemistry APC was largely meaningless, so I made dispensers/heaters require a power supply (Convair880).
 
@@ -38,27 +38,26 @@
 			user.show_text("[src] seems to be out of order.", "red")
 			return
 
+		if (istype(user,/mob/living/silicon/robot/) && beaker && beaker == B)
+			// If a cyborg is using this, and is trying to stick the same beaker into the heater again,
+			// treat it like they just want to open the UI for QOL
+			attack_ai(user)
+			return
+
 		if(src.beaker)
 			boutput(user, "A beaker is already loaded into the machine.")
 			return
 
-		if(istype(user,/mob/living/silicon/robot/))
-			if (roboworking)
-				boutput(user, "<span style=\"color:red\">A cyborg is already using this!</span>")
-				return
-			var/temperature = input("Target Temperature (0-1000):", "Reagent Heater/Cooler", null, null) as null|num
-			if(!temperature) return
-			if (temperature > 1000) temperature = 1000
-			if (temperature < 0) temperature = 0
-			roboactive(B, user, temperature)
-			roboworking = 1
-		else
-			src.beaker =  B
+		src.beaker = B
+		if(!istype(user,/mob/living/silicon/robot/))
 			user.drop_item()
 			B.set_loc(src)
-			boutput(user, "You add the beaker to the machine!")
-			src.updateUsrDialog()
-			src.update_icon()
+		else
+			roboworking = user
+			spawn(10) robot_disposal_check()
+		boutput(user, "You add the beaker to the machine!")
+		src.updateUsrDialog()
+		src.update_icon()
 
 	handle_event(var/event)
 		if (event == "reagent_holder_update")
@@ -89,10 +88,21 @@
 		if(!in_range(src, usr)) return
 
 		usr.machine = src
-		if (!beaker) return
+		if (!beaker)
+			// This should only happen when the UI is out of date - refresh it
+			src.updateUsrDialog()
+			return
 
 		if (href_list["eject"])
-			beaker:set_loc(src.loc)
+			if (roboworking)
+				if (usr != roboworking)
+					// If a cyborg is using this, other people can't eject the beaker.
+					usr.show_text("You cannot eject the beaker because it is part of [roboworking].", "red")
+					return
+				roboworking = null
+			else
+				beaker.set_loc(src.loc)
+
 			beaker = null
 			src.update_icon()
 			src.updateUsrDialog()
@@ -120,9 +130,7 @@
 			src.updateUsrDialog()
 			return
 		else if (href_list["stop"])
-			active = 0
-			src.update_icon()
-			src.updateUsrDialog()
+			set_inactive()
 			return
 		else if (href_list["start"])
 			if (!beaker.reagents.total_volume) return
@@ -179,20 +187,25 @@
 		onclose(user, "chem_heater")
 		return
 
+	ProximityLeave(atom/movable/AM as mob|obj)
+		if (roboworking && AM == roboworking && get_dist(src, AM) > 1)
+			// Cyborg is leaving (or getting pushed away); remove its beaker
+			roboworking = null
+			beaker = null
+			set_inactive()
+			// If the heater was working, the next iteration of active() will turn it off and fix power usage
+		return ..(AM)
 
 	proc/active()
 		if(!active) return
 		if (stat & (NOPOWER|BROKEN))
-			src.power_usage = 50
-			active = 0
+			set_inactive()
 			return
 		if(!beaker)
-			src.power_usage = 50
-			active = 0
+			set_inactive()
 			return
 		if(!beaker.reagents.total_volume)
-			src.power_usage = 50
-			active = 0
+			set_inactive()
 			return
 
 		var/datum/reagents/R = beaker:reagents
@@ -206,32 +219,28 @@
 
 		spawn(10) active()
 
-	proc/roboactive(var/obj/item/reagent_containers/glass/B, var/mob/user, var/temperature)
-		roboworking = 1
-		src.power_usage = 1000
-		var/datum/reagents/ROB = B:reagents
-		boutput(user, "<span style=\"color:blue\">The temperature of [B] is now [ROB.total_temperature] degrees.</span>")
+	proc/robot_disposal_check()
+		// Without this, the heater might occasionally show that a beaker is still inserted
+		// when it in fact isn't. That should only happen when
+		//  - a cyborg was using the machine, and
+		//  - the cyborg lost its chest with the beaker still inserted, and
+		//  - the heater was inactive at the time of death.
+		// Since we don't get any callbacks in this case - the borg leaves the tile by
+		// way of qdel, so there's no ProximityLeave notification - the only way to update
+		// the icon promptly is to run a periodic check when a borg has its beaker inserted
+		// into the heater, regardless of whether the heater is active or not.
+		if (!roboworking)
+			// This proc is only called when a robot was at one point using the heater, so if
+			// roboworking is unset then it must have been deleted
+			set_inactive()
+		else
+			spawn(10) robot_disposal_check()
 
-		if (get_dist(src, user) > 1)
-			boutput(user, "<span style=\"color:red\">You need to move closer to heat the chemicals!</span>")
-			src.power_usage = 50
-			roboworking = 0
-			return
-		if (stat & (NOPOWER|BROKEN))
-			user.show_text("[src] seems to be out of order.", "red")
-			src.power_usage = 50
-			roboworking = 0
-			return
-
-		ROB.temperature_reagents(temperature, 10)
-		if(abs(ROB.total_temperature - temperature) <= 3)
-			boutput(user, "<span style=\"color:blue\">The [src] has finished!</span>")
-			src.power_usage = 50
-			roboworking = 0
-			return
-
-		spawn(10) roboactive(B, user, temperature)
-		B.reagents.handle_reactions()
+	proc/set_inactive()
+		power_usage = 50
+		active = 0
+		update_icon()
+		updateUsrDialog()
 
 	proc/update_icon()
 		src.overlays -= src.icon_beaker
