@@ -1427,7 +1427,7 @@ var/list/mechanics_telepads = new/list()
 
 	proc/send(var/datum/mechanicsMessage/input)
 		if(level == 2) return
-		var/list/converted = params2list(input.signal)
+		var/list/converted = params2list(html_decode(input.signal))
 		if(!converted.len || !ready) return
 
 		ready = 0
@@ -2214,7 +2214,7 @@ var/list/mechanics_telepads = new/list()
 	density = 1
 
 	get_desc()
-		. += "<br><span style=\"color:blue\">Current Signal: [html_encode(sanitize(mechanics.outputSignal))].</span>"
+		. += "<br><span style=\"color:blue\">Current Signal: [sanitize(mechanics.outputSignal)].</span>"
 
 	attack_hand(mob/user as mob)
 		if(level == 1)
