@@ -1,9 +1,11 @@
 // BEGIN_INTERNALS
 /*
-LAST_COMPILE_TIME: 1457219709
-DIR: code code\chui\example code\datums\buildmodes code\datums\buildmodes\adventure code\datums\buildmodes\adventure\elements code\datums\chemistry code\datums\chemistry\tools code\datums\critter_mobs\health code\datums\gamemodes code\datums\genetics 
+LAST_COMPILE_TIME: 1457436537
+DIR: code code\admin code\datums code\datums\abilities code\datums\abilities\changeling code\datums\abilities\critter code\datums\abilities\wizard code\datums\buildmodes code\datums\buildmodes\adventure code\datums\buildmodes\adventure\elements code\datums\controllers code\datums\controllers\process code\datums\gauntlet code\mob code\obj code\obj\item code\obj\item\device code\obj\machinery code\obj\machinery\computer code\obj\machinery\door code\procs code\WorkInProgress code\WorkInProgress\DabirMechcomp code\WorkInProgress\DabirMechcomp\mechcomp maps 
 AUTO_FILE_DIR: OFF
 MAP_ICON_TYPE: 0
-LAST_COMPILE_VERSION: 510.1327
+LAST_COMPILE_VERSION: 509.1319
+WINDOW: code\obj.dm;code\obj\item.dm;code\obj\item\device\multitool.dm;code\WorkInProgress\DabirMechcomp\mechcomp.dm;code\obj\machinery\firealarm.dm;code\obj\machinery\door\door_parent.dm;code\obj\machinery\vending.dm;code\WorkInProgress\DabirMechcomp\mechcomp\builder.dm;code\WorkInProgress\DabirMechcomp\mechcomp\pressure.dm
+FILE: code\WorkInProgress\DabirMechcomp\mechcomp\pressure.dm
 */
 // END_INTERNALS
