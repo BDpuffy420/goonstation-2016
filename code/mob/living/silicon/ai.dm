@@ -606,13 +606,13 @@ var/list/ai_emotions = list("Happy" = "ai_happy",\
 				boutput(usr, text("<span style=\"color:red\">[] looks slightly dented</span>", src.name))
 			else
 				boutput(usr, text("<span style=\"color:red\"><B>[] looks severely dented!</B></span>", src.name))
-			if (src.fireloss)
-				if (src.fireloss < 30)
-					boutput(usr, text("<span style=\"color:red\">[] looks slightly burnt!</span>", src.name))
-				else
-					boutput(usr, text("<span style=\"color:red\"><B>[] looks severely burnt!</B></span>", src.name))
-				if (src.stat == 1)
-					boutput(usr, text("<span style=\"color:red\">[] doesn't seem to be responding.</span>", src.name))
+		if (src.fireloss)
+			if (src.fireloss < 30)
+				boutput(usr, text("<span style=\"color:red\">[] looks slightly burnt!</span>", src.name))
+			else
+				boutput(usr, text("<span style=\"color:red\"><B>[] looks severely burnt!</B></span>", src.name))
+		if (src.stat == 1)
+			boutput(usr, text("<span style=\"color:red\">[] doesn't seem to be responding.</span>", src.name))
 	return
 
 /mob/living/silicon/ai/emote(var/act, var/voluntary = 0)
