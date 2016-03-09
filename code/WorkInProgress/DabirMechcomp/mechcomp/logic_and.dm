@@ -9,8 +9,7 @@
 
 	getReadout()
 	{
-		return {"<br><span style=\"color:blue\">Current Time Frame: [timeframe]
-		<br></span>"}
+		return "<span style=\"color:blue\">Current Time Frame: [timeframe]</span>"
 	}
 
 	proc/input1(var/datum/mech_message/input, getName=0)
@@ -44,14 +43,17 @@
 	{
 		if(getName) return "Set timeframe"
 
-		if(isnum(input.signal))
+		var/newtimeframe = text2num(input.signal)
+		if(newtimeframe)
 		{
-			timeframe = max(1, round(input.signal, 0.1)) 	// Minimum timeframe of 1 second, rounded to the nearest 1/10 second.
+			timeframe = max(1, round(newtimeframe, 0.1)) 	// Min timeframe of 1s rounded to nearest 1/10 second.
 			if(announcements) componentSay("Timeframe set to [timeframe] seconds.")
 		}
 	}
 
 	updateIcon()
+	{
 		icon_state = "[under_floor ? "u":""]comp_and"
 		return
+	}
 }

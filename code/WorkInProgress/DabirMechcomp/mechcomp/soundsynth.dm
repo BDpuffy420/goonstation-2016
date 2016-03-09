@@ -7,14 +7,7 @@
 
 	getReadout()
 	{
-		if(ready)
-		{
-			return "The synthesizer is ready to speak."
-		}
-		else
-		{
-			return "The synthesizer is recharging."
-		}
+		return "<span style=\"color:blue\">The synthesizer is [ready ? "ready to speak" : "recharging"]</span>"
 	}
 
 	proc/input1(var/datum/mech_message/input, getName=0)

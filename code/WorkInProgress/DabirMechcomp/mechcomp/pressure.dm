@@ -7,8 +7,8 @@
 
 	getReadout()
 	{
-		return {"<br><span style=\"color:blue\">Output signal: \"[html_encode(sanitize(output))]\".
-		<br>The pressure pad is [ready ? "ready" : "recharging"].</span>"}
+		return {"<br><span style=\"color:blue\">Output signal: \"[html_encode(sanitize(output))]\"<br>
+		The pressure pad is [ready ? "ready" : "recharging"]</span>"}
 	}
 
 	proc/input1(var/datum/mech_message/input, getName=0)

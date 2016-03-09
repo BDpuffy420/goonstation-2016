@@ -7,7 +7,7 @@
 
 	getReadout()
 	{
-		return "<span style=\"color:blue\">[names ? "I" : "Not i"]ncluding names of speakers in signals.</span>"
+		return "<span style=\"color:blue\">[names ? "I" : "Not i"]ncluding names of speakers in signals</span>"
 	}
 
 	proc/input1(var/datum/mech_message/input, getName=0)

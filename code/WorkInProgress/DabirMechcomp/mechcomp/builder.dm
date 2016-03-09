@@ -14,7 +14,7 @@
 
 	getReadout()
 	{
-		return {"<br><span style=\"color:blue\">Starting string: \"[html_encode(sanitize(startstr))]\"<br>
+		return {"<span style=\"color:blue\">Starting string: \"[html_encode(sanitize(startstr))]\"<br>
 		Current buffer contents: \"[html_encode(sanitize(buffer))]\"<br>
 		Ending string: \"[html_encode(sanitize(endstr))]\"</span>"}
 	}

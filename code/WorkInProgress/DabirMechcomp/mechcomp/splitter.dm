@@ -1,46 +1,51 @@
-/obj/item/mechanics/splitter
-	name = "Signal splitter component"
-	desc = ""
+/obj/item/mechcomp/splitter
+{
+	name = "signal splitter component"
+	desc = "Takes a signal with many fields, such as a wifi signal, and splits off one of them by name."
 	icon_state = "comp_split"
+	var/triggerstr = ""
 
-	get_desc()
-		. += "<br><span style=\"color:blue\">Current Trigger Field: [mechanics.triggerSignal]</span>"
+	getReadout()
+	{
+		return "<span style=\"color:blue\">Current trigger field: \"[html_encode(sanitize(triggerstr))]\"</span>"
+	}
 
-	New()
-		..()
-		mechanics.addInput("split", "split")
+	proc/input1(var/datum/mech_message/input, getName=0)
+	{
+		if(getName) return "set trigger field"
+
+		if(input)
+		{
+			if(input.signal)
+			{
+				triggerstr = input.signal
+				if(announcements) componentSay("Trigger field set to \"[triggerstr]\".")
+			}
+		}
+	}
+
+	proc/input2(var/datum/mech_message/input, getName=0)
+	{
+		if(getName) return "split signal"
+
+		if(input)
+		{
+			var/list/converted = params2list(input.signal)
+			if(converted.len)
+			{
+				if(converted.Find(triggerstr))
+				{
+					input.signal = converted[triggerstr]
+					fireAllOutgoing(input)
+				}
+			}
+		}
 		return
-
-	proc/split(var/datum/mechanicsMessage/input)
-		if(level == 2) return
-		var/list/converted = params2list(input.signal)
-		if(converted.len)
-			if(converted.Find(mechanics.triggerSignal))
-				input.signal = converted[mechanics.triggerSignal]
-				mechanics.fireOutgoing(input)
-		return
-
-	verb/settvalue2()
-		set src in view(1)
-		set name = "\[Set Trigger Field\]"
-		set desc = "Sets the Trigger Field that causes this component to forward the Value of that Field."
-		set category = "Local"
-
-		if (!istype(usr, /mob/living))
-			return
-		if (usr.stat)
-			return
-		if (!mechanics.allowChange(usr))
-			boutput(usr, "<span style=\"color:red\">[MECHFAILSTRING]</span>")
-			return
-
-		var/inp = input(usr,"Please enter Trigger Field:","Trigger Field setting","1") as text
-		if(length(inp))
-			inp = strip_html(html_decode(inp))
-			mechanics.triggerSignal = inp
-			boutput(usr, "Trigger Field set to [inp]")
-		return
+	}
 
 	updateIcon()
+	{
 		icon_state = "[under_floor ? "u":""]comp_split"
 		return
+	}
+}

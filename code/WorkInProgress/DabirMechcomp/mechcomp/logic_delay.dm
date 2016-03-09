@@ -8,8 +8,8 @@
 
 	getReadout()
 	{
-		return {"<span style=\"color:blue\">Current delay: [delay] seconds.
-		<br>Current buffer: [html_encode(sanitize(buffer))]</span>"}
+		return {"<span style=\"color:blue\">Current delay: [delay] seconds<br>
+		Current buffer: [html_encode(sanitize(buffer))]</span>"}
 	}
 
 	proc/input1(var/datum/mech_message/input, getName=0)
@@ -42,14 +42,17 @@
 	{
 		if(getName) return "Set delay"
 
-		if(isnum(input.signal))
+		var/newdelay = text2num(input.signal)
+		if(newdelay)
 		{
-			delay = max(0.1, round(input.signal, 0.1)) 			// Minimum delay of 1/10 second, rounded to the nearest 1/10 second.
+			delay = max(1, round(newdelay, 0.1)) 	// Minimum delay of 1 second, rounded to the nearest 1/10 second.
 			if(announcements) componentSay("Delay set to [delay] seconds.")
 		}
 	}
 
 	updateIcon()
+	{
 		icon_state = "[under_floor ? "u":""]comp_wait"
 		return
+	}
 }
