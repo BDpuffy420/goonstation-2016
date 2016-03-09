@@ -1,6 +1,6 @@
 /obj/item/mechcomp/hscan
 {
-	name = "hand scanner"
+	name = "hand scanner component"
 	desc = "Sends the full name or fingerprint of anyone who touches it."
 	icon_state = "comp_hscan"
 	var/send_name = 0
