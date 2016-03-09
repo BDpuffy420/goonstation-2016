@@ -395,3 +395,11 @@
 	item_state = "lgloves"
 	see_face = 1
 	body_parts_covered = HEAD
+
+/obj/item/clothing/head/towel_hat
+	name = "towel hat"
+	desc = "A white towel folded all into a fancy hat. NOT a turban!" // @;)
+	icon_state = "towelhat"
+	item_state = "lgloves"
+	see_face = 1
+	body_parts_covered = HEAD

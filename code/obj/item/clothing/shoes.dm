@@ -193,6 +193,12 @@
 	icon_state = "flippers"
 	permeability_coefficient = 0.05
 
+/obj/item/clothing/shoes/fuzzy //not boolean slippers
+	name = "fuzzy slippers"
+	desc = "A pair of cute little pink rabbit slippers."
+	icon_state = "fuzzy"
+	heat_transfer_coefficient = 0.05
+
 /obj/item/clothing/shoes/moon
 	name = "moon shoes"
 	desc = "Recent developments in trampoline-miniaturization technology have made these little wonders possible."

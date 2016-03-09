@@ -874,7 +874,7 @@
 
 	attack_self(mob/user as mob)
 		add_fingerprint(user)
-		var/choice = input(user, "What do you want to do with [src]?", "Selection") as null|anything in list("Place", "Rip up")
+		var/choice = input(user, "What do you want to do with [src]?", "Selection") as null|anything in list("Place","Fold into hat", "Rip up")
 		if (!choice)
 			return
 		switch (choice)
@@ -882,6 +882,16 @@
 				user.drop_item()
 				src.layer = EFFECTS_LAYER_BASE-1
 				return
+
+			if ("Fold into hat") //shamelessly copied from paper hat code
+				set src in usr
+				var/obj/item/clothing/under/towel/P = src
+				src = null
+				qdel(P)
+				usr.show_text("You fold the towel into a hat! Neat.", "blue")
+				usr.put_in_hand_or_drop(new /obj/item/clothing/head/towel_hat ())
+				return
+
 			if ("Rip up")
 				boutput(user, "You begin ripping up [src].")
 				if (!do_after(user, 30))

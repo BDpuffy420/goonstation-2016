@@ -38,6 +38,20 @@
 			src.icon_state = "hoodie"
 			src.item_state = "hoodie"
 
+/obj/item/clothing/suit/bathrobe
+	name = "bathrobe"
+	desc = "A snazzy bathrobe for after you get out of the shower."
+	icon_state = "bathrobe"
+	item_state = "bathrobe"
+	body_parts_covered = TORSO|ARMS
+	heat_transfer_coefficient = 0.30
+	cold_resistance = 15
+	c_flags = ONESIZEFITSALL //allows for obese to wear
+	burn_possible = 1
+	burn_point = 450
+	burn_output = 800
+	health = 20
+
 /obj/item/clothing/suit/bio_suit
 	name = "bio suit"
 	desc = "A suit that protects against biological contamination."
